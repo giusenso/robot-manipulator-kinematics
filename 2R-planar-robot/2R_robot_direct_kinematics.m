@@ -9,8 +9,8 @@ N = 2;
 %% DH table of parameters of 2R, same for each joint
 % assign these parameters in order to compute specific values
 %          | a | alpha | d | theta |
-DHTABLE = [ 100   0   0   30;
-            80   0   0   20];
+DHTABLE = [ syms('a1')   0   0   syms('q1');
+            syms('a2')   0   0   syms('q2')];
         
 %% Build the general Denavit-Hartenberg trasformation matrix
 TDH = [ cosd(theta) -sind(theta)  0   a*cosd(theta);
