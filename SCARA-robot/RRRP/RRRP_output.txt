@@ -1,0 +1,34 @@
+TOE =
+ 
+[ cos(q1 + q2 + q3),  sin(q1 + q2 + q3),  0, a2*cos(q1 + q2) + a1*cos(q1)]
+[ sin(q1 + q2 + q3), -cos(q1 + q2 + q3),  0, a2*sin(q1 + q2) + a1*sin(q1)]
+[                 0,                  0, -1,                 d1 + d3 - q4]
+[                 0,                  0,  0,                            1]
+ 
+ 
+p =
+ 
+ a2*cos(q1 + q2) + a1*cos(q1)
+ a2*sin(q1 + q2) + a1*sin(q1)
+                 d1 + d3 - q4
+ 
+ 
+n =
+ 
+ cos(q1 + q2 + q3)
+ sin(q1 + q2 + q3)
+                 0
+ 
+ 
+s =
+ 
+  sin(q1 + q2 + q3)
+ -cos(q1 + q2 + q3)
+                  0
+ 
+ 
+a =
+ 
+  0
+  0
+ -1
