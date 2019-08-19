@@ -2,7 +2,7 @@
 """
 Created on Mon Aug 19 10:50:56 2019
 
-@author: giuse
+@author: giuseppe sensolini
 """
 from numpy import *
 from math import atan2
