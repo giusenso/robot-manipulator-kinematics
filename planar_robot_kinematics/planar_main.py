@@ -2,7 +2,7 @@
 """
 Created on Fri Aug 16 17:04:20 2019
 
-@author: Giuseppe Sensoli Arra'
+@author: Giuseppe Sensolini Arra'
 """
 
 from planar_robot import planar_robot
