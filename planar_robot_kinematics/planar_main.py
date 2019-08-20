@@ -29,8 +29,7 @@ joint = robot.RR_inverse_kinematics(ee_pos)
 if type(joint)==int and joint_==-1:
     print("ERROR: point", ee_pos, "unreachable because out of Workspace 1")
 else:
-    print("inverse kinematics output: q_a =", joint[0])
-    print("inverse kinematics output: q_b =", joint[1])
+    print("inverse kinematics output:\nq_a =", joint[0], "\nq_b =", joint[1])
     
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
