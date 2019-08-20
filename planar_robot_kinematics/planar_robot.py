@@ -2,7 +2,7 @@
 """
 Created on Mon Aug 19 10:50:56 2019
 
-@author: giuseppe sensolini
+@author: giuse
 """
 from numpy import *
 from math import atan2
@@ -88,8 +88,11 @@ class planar_robot:
             return -1
         
         c2 = (px*px + py*py - self.l[0]*self.l[0] - self.l[1]*self.l[1]) / (2*self.l[0]*self.l[1])
-        s2 = sqrt(1 - c2*c2)
-        q2 = atan2(s2, c2)
-        q1 = atan2(py, px) - atan2(self.l[1]*s2, self.l[0]+self.l[1]+c2)
+        s2_pos = sqrt(1 - c2*c2)
+        s2_neg = -sqrt(1 - c2*c2)
+        q2_pos = atan2(s2_pos, c2)
+        q1_pos = atan2( py*(self.l[0]+self.l[1]*c2) - px*self.l[1]*s2_pos , px*(self.l[0]+self.l[1]*c2) + py*self.l[1]*s2_pos )
+        q2_neg = atan2(s2_neg, c2)
+        q1_neg = atan2( py*(self.l[0]+self.l[1]*c2) - px*self.l[1]*s2_neg , px*(self.l[0]+self.l[1]*c2) + py*self.l[1]*s2_neg ) 
         
-        return [round(rad2deg(q1),3), round(rad2deg(q2),3)]
+        return [[round(rad2deg(q1_pos),4), round(rad2deg(q2_pos),4)], [round(rad2deg(q1_neg),4), round(rad2deg(q2_neg),4)] ]

@@ -11,25 +11,26 @@ from planar_robot import rad2deg
 
 # MAIN ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-robot = planar_robot([10., 10.])
-
+robot = planar_robot([0.6, 0.5])
+joint = [-79.6111, 90.0]
 # direct kinematics----------------------
-robot.direct_kinematics( [45, 0] )
+print("\nDIRECT KINEMATICS:\n{ joints =", joint, "}")
+robot.direct_kinematics( joint )
 if type(robot.TOE)==int and robot.TOE==-1:
     print("ERROR: link-joint dimensions does not match!")
 else:
-    print("TOE:")
+    print("direct kinematics output:\nTOE =")
     for row in robot.TOE: print(row)
 
 # inverse kinematics---------------------
 ee_pos = robot.get_end_effector_pos()
-print("\nactual joint angles: q =", rad2deg(robot.q))
-print("e-e pos: p =", ee_pos)
+print("\nINVERSE KINEMATICS: \n{ end_effector_pos(x,y,z) =", ee_pos,"}")
 joint = robot.RR_inverse_kinematics(ee_pos)
 if type(joint)==int and joint_==-1:
     print("ERROR: point", ee_pos, "unreachable because out of Workspace 1")
 else:
-    print("inverse kinematics output: q =", joint)
+    print("inverse kinematics output: q_a =", joint[0])
+    print("inverse kinematics output: q_b =", joint[1])
     
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
