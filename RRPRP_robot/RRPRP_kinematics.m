@@ -1,5 +1,5 @@
 %% RRPRP robot KINEMATICS
-%  07.2018, @Giuseppe Sensolini
+%  07.2019, @Giuseppe Sensolini
 %  my solution to the Robotics 1 exam[March 27, 2018, De Luca, La Sapienza]
 
 clear all
