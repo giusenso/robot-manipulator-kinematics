@@ -1,4 +1,4 @@
-%% PRPR robot KINEMATICS
+%% RRR robot KINEMATICS
 %  06.2017, @Giuseppe Sensolini
 %  my solution to the Robotics 1 exam[February 5, 2018, De Luca, La Sapienza]
 
