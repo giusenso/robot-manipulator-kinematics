@@ -1,29 +1,37 @@
 %% RRPRP robot KINEMATICS
 %  07.2019, @Giuseppe Sensolini
-%  my solution to the Robotics 1 exam[March 27, 2018, De Luca, La Sapienza]
-
+%  A solution to the Robotics 1 exam [March 27, 2018, De Luca, La Sapienza]
 clear all
 clc
 
-%% symbolic parameters
-syms a alpha d theta    
-N = 5                    
-q = sym('q',[N,1])
-d1 = sym('d1');
+%% Robot parameters________________________________________________________
+disp('::: INPUT DATA ::::::::::::::::::::::::::::::::');
 
-   %% Build the general Denavit-Hartenberg trasformation matrix
-DH = [ cos(theta) -sin(theta)*cos(alpha)  sin(theta)*sin(alpha) a*cos(theta);
-        sin(theta)  cos(theta)*cos(alpha) -cos(theta)*sin(alpha) a*sin(theta);
-          0             sin(alpha)             cos(alpha)            d;
-          0               0                      0                   1];
-%% Denavit-Hartemberg table
+syms a alpha d theta
+revolute_joint  = [1 1 0 1 0]
+prismatic_joint = (-1)*(revolute_joint-1)
+
+N   = 5                 % joint number                   
+q   = sym('q',[N,1])    % joints symbolic variables
+d1  = sym('d1');        % z offset along link 1
+
+%% Denavit-Hartemberg table (set up parameters here!) 
+disp('::: DH TABLE :::::::::::::::::::::::::::::::::::');
 DHTABLE = [     pi/2    0   d1      q(1);
                 pi/2    0   0       q(2);
                 pi/2    0   q(3)    pi;
                 pi/2    0   0       q(4);
                 0       0   q(5)    0     ]
 
-%% Build transformation matrices for each link
+%% General Denavit-Hartenberg trasformation matrix
+DH = [ cos(theta) -sin(theta)*cos(alpha)  sin(theta)*sin(alpha) a*cos(theta);
+        sin(theta)  cos(theta)*cos(alpha) -cos(theta)*sin(alpha) a*sin(theta);
+          0             sin(alpha)             cos(alpha)            d;
+          0               0                      0                   1  ];
+
+
+%% Direct Kinematics ______________________________________________________
+% Build transformation matrices for each link
 A = cell(1,N);
 for i = 1:N
     alpha   = DHTABLE(i,1);
@@ -32,32 +40,26 @@ for i = 1:N
     theta   = DHTABLE(i,4);
     A{i} = subs(DH);
 end
-
-%% Build base-to-end-effector transformation matrix
-A05 = eye(4);
+clear alpha a d theta
+%% Build base-to-end-effector transformation matrix 
+T = eye(4);
 for i = 1:N 
-    A05 = A05 * A{i};
-    A05 = simplify(A05);
+    T =  T * A{i};
+    T = simplify(T);
 end
 
-%% output
-
-P05 = A05(1:3, 4)   % poition vector
-
-R05 = A05(1:3, 1:3) % rotation matrix
-
-A05 % base-to-end-effector transformation matrix
+P05 = T(1:3, 4);   % poition vector
+R05 = T(1:3, 1:3); % rotation matrix
+disp('::: TRANSFORMATION MATRIX ::::::::::::::::::::::');
+T % base-to-end-effector transformation matrix
 
 
-%% compute Jacobian matrix
-
-revolute_joint = [1 1 0 1 0]
-prismatic_joint = ~revolute_joint
+%% compute Geometric Jacobian matrix ______________________________________
 
 % linear component
 Jl = zeros(0,0);
 for i = 1:N
-   Jl = simplify( [Jl , diff(P05,q(i))] );
+   Jl = simplify( [Jl , diff(P05,q(i))] ); % same as jacobian(P05,q)
 end
 
 % angular component
@@ -65,13 +67,125 @@ Ja = zeros(0,0);
 R = eye(3);
 z = [0 0 1]';
 for i = 1:N
-    Ja =  ( [Ja , R * z * revolute_joint(i)] );
-    R = simplify( R * (A{i}(1:3,1:3)) );
+    Ja  = [Ja , R * z * revolute_joint(i)];
+    R   = simplify( R * (A{i}(1:3,1:3)) );
 end
-
-% full Jacobian
+clear z R
+% full geometric Jacobian
+disp('::: GEOMETRIC JACOBIAN :::::::::::::::::::::::::');
 J = [Jl ; Ja]
 
-J_det = simplify(det(Jl(1:N,1:N)))
 
-J_null = simplify(null(J))
+%% Redundancy analysis ____________________________________________________
+if N==3
+    disp('::: Determinant of the linear Jacobian:');
+    J_det = simplify(det(Jl(:,1:3)))
+elseif N==4
+    disp('::: Minor determinants of the linear Jacobian:');
+    J_det_a = simplify(det(Jl(:,1:3)))
+    J_det_b = simplify(det(Jl(:,2:4)))
+    J_det_c = simplify(det([Jl(:,1:2),Jl(1:3,4)]))
+    J_det_d = simplify(det([Jl(:,3:4),Jl(1:3,1)]))
+elseif N>4
+    %in this case is not convenient use the analysis of the determinant
+    %to spot singularities. A better approach is based on the null-space
+    %analysis
+    disp('::: Jacobian null space:');
+    J_null = simplify(null(J))
+end
+    
+%% Plot ___________________________________________________________________
+disp('::: PLOT stuff ::::::::::::::::::::::::::::::::')
+
+% joint values to plot (non fixed variables)
+k = 0.5;
+jnt_value = [0, pi/2, k, pi/2, k];
+
+k = 0.5;	% fixed magnitude for prismatic joints
+%dh table without non constant parameters
+DH = DHTABLE;
+DH = subs(DHTABLE, d1, k);
+for i = 1:N
+    DH = subs(DH, q(i), jnt_value(i));
+end
+DH = sym2double(DH)
+
+body1 = rigidBody('body1');
+body2 = rigidBody('body2');
+body3 = rigidBody('body3');
+body4 = rigidBody('body4');
+body5 = rigidBody('body5');
+body = [body1, body2, body3, body4, body5];
+
+jnt1 = rigidBodyJoint('jnt1','revolute');
+jnt2 = rigidBodyJoint('jnt2','revolute');
+jnt3 = rigidBodyJoint('jnt3','prismatic');
+jnt4 = rigidBodyJoint('jnt4','revolute');
+jnt5 = rigidBodyJoint('jnt5','prismatic');
+jnt = [jnt1, jnt2, jnt3, jnt4, jnt5];
+
+robot = build_robot(body, jnt, DH);
+jnt_config = build_jnt_config(robot, jnt_value);
+show(robot, jnt_config);
+axis on
+
+
+%% FUNCTIONS ______________________________________________________________
+
+% input:
+%       - body: 1xN array of rigidBody objects
+%       - jnt: 1xN array of rigidBodyJoint objects
+%       - DH: Denavit hartemberg Nx4 matrix
+%            Only Double type matrix allowed (no symbolic!)
+%           params are give in the following order: [alpha | a | d | theta]
+% output:
+%       - robot: rigidBodyTree object
+function robot = build_robot(body, jnt, DH)
+    robot = rigidBodyTree;
+    N = size(body,2);
+    
+    % [alpha a d theta] --> [a  alpha  d  theta]
+    DH = [DH(:,2), DH(:,1), DH(:,3), DH(:,4)];
+    
+    for i = 1:N
+        %transformation from jnt(i-1) to jnt(i)
+        setFixedTransform(jnt(i), DH(i,:), 'dh');
+        body(i).Joint = jnt(i);
+        % attach bodies
+        if i==1
+            addBody(robot, body(i), 'base');% attach body 1 to the base frame
+        else
+            addBody(robot, body(i), body(i-1).Name);
+        end
+    end
+end
+
+% input:
+%       - robot: rigidBodyTree object
+%       - jnt_value: 1xN array with joint variables
+%           (non constant parameters)
+% output:
+%       - jnt_config: 1xN JointPosition object array
+function jnt_config = build_jnt_config(robot, jnt_value)
+    N = size(robot.Bodies,2);
+    %build joint configuration object
+    jnt_config = homeConfiguration(robot);
+    for i = 1:N
+        jnt_config(i).JointPosition = jnt_value(i);
+    end
+
+    showdetails(robot)
+end
+
+% input:
+%   - m: symbolic matrix (with syms already substituted with numbers!)
+% output:
+%   - ret: double type matrix
+function ret = sym2double(m)
+    ret = zeros(size(m,1), size(m,2));
+    for i = 1:size(m,1);
+        for j = 1:size(m,2)
+            ret(i,j) = double(m(i,j));
+        end
+    end
+end
